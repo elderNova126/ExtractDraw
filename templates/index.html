@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extract Feature</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            flex-direction: column;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .logo-container img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h2 {
+            color: #5a67d8;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #5a67d8;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8, #434190);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .proc {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            font-weight: 600;
+            color: #555;
+            margin-top: 15px;
+            font-size: 14px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .file-label {
+            display: block;
+            background: #f3f3f3;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #444;
+            border: 2px dashed #5a67d8;
+            transition: 0.3s;
+        }
+
+        .file-label:hover {
+            background: #e3e3e3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+    </div>
+    <div class="container">
+        <h2>圖紙辨識</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group mb-3">
+                <label for="file" class="file-label">选择 PDF 文件</label>
+                <input type="file" class="form-control d-none" name="file" id="file" accept=".pdf" required>
+                <div class="form-check mt-2 text-start">
+                    <input class="form-check-input" type="checkbox" id="multiUpload">
+                    <label class="form-check-label" for="multiUpload">啟用张個上傳</label>
+                </div>
+            </div>
+            <div class="proc">
+                <button type="submit" class="btn btn-primary" id="submitBtn">上传</button>
+                <button type="button" class="btn btn-primary hidden" id="loadingBtn" disabled>
+                    <span class="spinner-border spinner-border-sm" role="status"></span> 正在載入，請稍後
+                </button>
+            </div>
+            <div class="status" id="log">状态：未连接</div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+    <script>
+        document.getElementById("multiUpload").addEventListener("change", function () {
+            let fileInput = document.getElementById("file");
+            if (this.checked) {
+                fileInput.setAttribute("multiple", "multiple");
+            } else {
+                fileInput.removeAttribute("multiple");
+            }
+        });
+
+        document.getElementById("file").addEventListener("change", function () {
+            let label = document.querySelector(".file-label");
+            if (this.files.length > 1) {
+                label.innerText = `已選擇 ${this.files.length} 個文件`;
+            } else if (this.files.length === 1) {
+                label.innerText = this.files[0].name;
+            } else {
+                label.innerText = "选择 PDF 文件";
+            }
+        });
+
+        document.getElementById("uploadForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            let formData = new FormData(this);
+            document.getElementById("submitBtn").classList.add("d-none");
+            document.getElementById("loadingBtn").classList.remove("d-none");
+            document.getElementById("log").innerHTML = "正在上传文件...";
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                debugger;
+                if (data.status == 200) {
+                    data
+                    document.getElementById("log").innerHTML = "上传成功！正在重定向...";
+                    setTimeout(() => {
+                        const downloadUrl = data.result;
+                        window.location.href = `/success?download_url=${encodeURIComponent(downloadUrl)}`;
+                    }, 1000);
+                } else {
+                    document.getElementById("log").innerHTML = data.result;
+                }
+                document.getElementById("submitBtn").classList.remove("d-none");
+                document.getElementById("loadingBtn").classList.add("d-none");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("log").innerHTML = "An error occurred.";
+                document.getElementById("submitBtn").classList.remove("d-none");
+                document.getElementById("loadingBtn").classList.add("d-none");
+            });
+        });
+
+        // window.onbeforeunload = () => fetch('/stop', 
+        //     {
+        //         method: 'GET'
+        //     }).then(response => response.text())
+        // .then(data => { console.log(data, "stop_test"); })
+        // .catch(error => { console.error('Error:', error); });
+
+        const d = new Date();
+        let user = d.getTime().toString();
+        sessionStorage.setItem('username', user);
+        var username = sessionStorage.getItem('username');
+        fetch('/set_sess', {
+            method: 'POST',
+            credentials: 'same-origin',  // Include this line if you want to send cookies along with the request
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username })  // Convert the data to JSON format
+        })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data, "test"); // Display the response from the Flask endpoint
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        var socket = io();
+        // Event handler for new connections.
+        // The callback function is invoked when a connection with the
+        // server is established.
+        socket.on('connect', function () {
+            socket.emit('my_event', { data: username });
+        });
+        socket.on('my_response', function (msg, cb) {
+            document.getElementById("log").innerHTML = msg.data
+        });
+        socket.on('process', function (msg) {
+            if (msg.username == username) {
+                console.log(msg.username, "kkkkk")
+                document.getElementById("log").innerHTML = msg.data
+            }
+        })
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+flask
+werkzeug
+flask_socketio
+flask_session
+numpy
+pytesseract
+PyMuPDF
+paddlepaddle 
+paddleocr==2.7.0.2
+opencv-python
+requests
+python-dotenv
+certifi
+python-dateutil
+pdf2image
+
+#eventlet
+# tesseract: latest version
+# tesseract weight files: https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata
+#			https://github.com/tesseract-ocr/tessdata/raw/main/mar.traineddata

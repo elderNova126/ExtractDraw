@@ -1,0 +1,11 @@
+**/__pycache__/
+build
+dist
+data
+venv
+upload
+flask_session
+weights
+.env
+
+
