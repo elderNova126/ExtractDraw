@@ -680,12 +680,12 @@ class PDF_Class:
         """
         # Split and convert pages to images
         socketio.emit(
-            "process", {"data": f"将 PDF 拆分为图像...", "username": username}
+            "process", {"data": f"將 PDF 拆分為圖像...", "username": username}
         )
         self.digit_doc = fitz.open(self.full_path)
         past_page_ind, page_batch = 0, 50
         socketio.emit(
-            "process", {"data": f"处理 {self.full_path}", "username": username}
+            "process", {"data": f"處理 {self.full_path}", "username": username}
         )
         result = ["", ["", ""]]
         print(f"Processing {self.full_path}")
@@ -710,7 +710,7 @@ class PDF_Class:
                     socketio.emit(
                         "process",
                         {
-                            "data": f"Processed {str(self.page_num)} of {len(self.digit_doc)}",
+                            "data": f"已處理 {str(self.page_num)} 的 {len(self.digit_doc)}",
                             "username": username,
                         },
                     )

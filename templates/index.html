@@ -104,6 +104,11 @@
         .file-label:hover {
             background: #e3e3e3;
         }
+
+        #multiUpload:disabled+.form-check-label {
+            color: gray;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -112,23 +117,23 @@
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
     </div>
     <div class="container">
-        <h2>圖紙辨識</h2>
+        <h2>AI圖紙辨識系統</h2>
         <form id="uploadForm" enctype="multipart/form-data">
             <div class="form-group mb-3">
-                <label for="file" class="file-label">选择 PDF 文件</label>
+                <label for="file" class="file-label">選擇 PDF 文件</label>
                 <input type="file" class="form-control d-none" name="file" id="file" accept=".pdf" required>
                 <div class="form-check mt-2 text-start">
-                    <input class="form-check-input" type="checkbox" id="multiUpload">
-                    <label class="form-check-label" for="multiUpload">啟用张個上傳</label>
+                    <input class="form-check-input" type="checkbox" id="multiUpload" disabled>
+                    <label class="form-check-label text-muted" for="multiUpload">啟用多個 PDF</label>
                 </div>
             </div>
             <div class="proc">
-                <button type="submit" class="btn btn-primary" id="submitBtn">上传</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">上傳</button>
                 <button type="button" class="btn btn-primary hidden" id="loadingBtn" disabled>
                     <span class="spinner-border spinner-border-sm" role="status"></span> 正在載入，請稍後
                 </button>
             </div>
-            <div class="status" id="log">状态：未连接</div>
+            <div class="status" id="log">狀態：未連接</div>
         </form>
     </div>
 
@@ -150,7 +155,7 @@
             } else if (this.files.length === 1) {
                 label.innerText = this.files[0].name;
             } else {
-                label.innerText = "选择 PDF 文件";
+                label.innerText = "選擇 PDF 文件";
             }
         });
 
@@ -160,34 +165,34 @@
             let formData = new FormData(this);
             document.getElementById("submitBtn").classList.add("d-none");
             document.getElementById("loadingBtn").classList.remove("d-none");
-            document.getElementById("log").innerHTML = "正在上传文件...";
+            document.getElementById("log").innerHTML = "正在上傳文件...";
 
             fetch("/upload", {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                debugger;
-                if (data.status == 200) {
-                    data
-                    document.getElementById("log").innerHTML = "上传成功！正在重定向...";
-                    setTimeout(() => {
-                        const downloadUrl = data.result;
-                        window.location.href = `/success?download_url=${encodeURIComponent(downloadUrl)}`;
-                    }, 1000);
-                } else {
-                    document.getElementById("log").innerHTML = data.result;
-                }
-                document.getElementById("submitBtn").classList.remove("d-none");
-                document.getElementById("loadingBtn").classList.add("d-none");
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                document.getElementById("log").innerHTML = "An error occurred.";
-                document.getElementById("submitBtn").classList.remove("d-none");
-                document.getElementById("loadingBtn").classList.add("d-none");
-            });
+                .then(response => response.json())
+                .then(data => {
+                    debugger;
+                    if (data.status == 200) {
+                        data
+                        document.getElementById("log").innerHTML = "上傳成功！正在重定向...";
+                        setTimeout(() => {
+                            const downloadUrl = data.result;
+                            window.location.href = `/success?download_url=${encodeURIComponent(downloadUrl)}`;
+                        }, 1000);
+                    } else {
+                        document.getElementById("log").innerHTML = data.result;
+                    }
+                    document.getElementById("submitBtn").classList.remove("d-none");
+                    document.getElementById("loadingBtn").classList.add("d-none");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("log").innerHTML = "An error occurred.";
+                    document.getElementById("submitBtn").classList.remove("d-none");
+                    document.getElementById("loadingBtn").classList.add("d-none");
+                });
         });
 
         // window.onbeforeunload = () => fetch('/stop', 

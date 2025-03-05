@@ -61,25 +61,25 @@ def getTime():
     return year, month, day, current_time
 @app.route('/upload', methods=['POST'])
 def upload():
-    # year, month, day, current_time = getTime()
-    # if year > 2025 or (year==2025 and month>3) or (year ==2025 and month==3 and day>5):
-    #     return {"status":400, "result": "Error: Request to Developer"}
+    year, month, day, current_time = getTime()
+    if year > 2025 or (year==2025 and month>3) or (year ==2025 and month==3 and day>5):
+        return {"status":400, "result": "錯誤：向開發者請求"}
     if 'file' not in request.files:
-        return {"status":400, "result": 'No file uploaded'}
+        return {"status":400, "result": '沒有文件上傳'}
 
     files = request.files.getlist('file')  # Get multiple files
     
     if not files or all(f.filename == '' for f in files):
-        return {"status":400,"result": 'Empty file name'}
+        return {"status":400,"result": '空檔名'}
     if len(files)>200:
-        return {"status":400, "result": "Reduce file count. Max size : 200 PDF"}
+        return {"status":400, "result": "減少文件數量。最大尺寸：200 PDF"}
     ALL_RESULTS, xlsx_file_paths = [], []
     zipPath = os.path.join(result_folder, str(int(time.time() * 100000)) + "_results.zip")
 
     try:
         for file in files:
             if not allowed_file(file.filename):
-                return {"status":400, "result": f'{file.filename}的文件扩展名无效'}        
+                return {"status":400, "result": f'{file.filename}的檔案副檔名無效'}        
             filename = secure_filename(file.filename)
             filename = re.sub("PDF", "pdf", filename)
             user_file = str(int(time.time() * 100000))
@@ -101,7 +101,7 @@ def upload():
         except:
             pass
     except Exception as e:
-        socketio.emit('process', {'data': f"{file.filename} 处理过程中遇到错误: {str(e)}", 'username': session.get('username')})
+        socketio.emit('process', {'data': f"{file.filename} 處理過程中遇到錯誤: {str(e)}", 'username': session.get('username')})
         return {"status":400, "result":"None"}
 
     return {"status":200, "result":f"download/{zipPath}"}
