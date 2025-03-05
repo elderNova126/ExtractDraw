@@ -61,9 +61,9 @@ def getTime():
     return year, month, day, current_time
 @app.route('/upload', methods=['POST'])
 def upload():
-    year, month, day, current_time = getTime()
-    if year > 2025 or (year==2025 and month>3) or (year ==2025 and month==3 and day>5):
-        return {"status":400, "result": "錯誤：向開發者請求"}
+    # year, month, day, current_time = getTime()
+    # if year > 2025 or (year==2025 and month>3) or (year ==2025 and month==3 and day>5):
+    #     return {"status":400, "result": "錯誤：向開發者請求"}
     if 'file' not in request.files:
         return {"status":400, "result": '沒有文件上傳'}
 
